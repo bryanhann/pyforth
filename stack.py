@@ -4,6 +4,8 @@ class StackErr( Exception ):
     pass
 
 class Stack:
+    def empty(self):
+        return not self._list
     def __init__(self, aList=[] ):
         aList = list( aList )
         assert type( aList ) == type( [] )
@@ -45,6 +47,7 @@ class Stack:
         a = list(self._list)
         b = list(other)
         return a == b
+
 class Test_Swap(unittest.TestCase):
  
     def test_swap(self):
@@ -60,5 +63,9 @@ class Test_Swap(unittest.TestCase):
     def test_repr(self):
         S=Stack( [0,1,2] )
         assert repr(S)==repr([0,1,2])
+    def test_empty_true(s):
+        assert Stack().empty()
+    def test_empty_false(s):
+        assert not Stack( [1] ).empty()
 if __name__=='__main__':
     unittest.main()
