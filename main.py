@@ -1,7 +1,22 @@
 import unittest
 import sys
 from utilities import *
-from stack import Stack, StackErr
+from stack import StackErr
+from stack import Stack as _Stack
+
+def str_reverse(s):
+    parts = s.split()
+    parts.reverse()
+    return ' '.join(parts)
+
+
+class Stack(_Stack):
+    def prepare(self, aa=[] ):
+        if type(aa)==type(''):
+            aa = aa.split()
+            aa = map(try_eval, aa)
+        for item in aa:
+            self.push(item)
 
 DICT = {}
 DICT[ 'square' ] = "dup *"
@@ -24,33 +39,13 @@ class Machine:
             cmd()
             return
 
-    def s_prepare(self, aa=[] ):
-        if type(aa)==type(''):
-            aa = aa.split()
-            aa = map(try_eval, aa)
-        for item in aa:
-            self._S.push(item)
-
-    def r_prepare(self, aa=[] ):
-        if type(aa)==type(''):
-            aa = aa.split()
-            aa = map(try_eval, aa)
-        for item in aa:
-            self._R.push(item)
-
-    def sr_prepare(self,stuff):
-        if '|' in stuff:
-            s_stuff, r_stuff=stuff.split('|')
-            r_parts = r_stuff.split()
-            r_parts.reverse()
-            r_stuff = ' '.join(r_parts)
-        else:
-            s_stuff, r_stuff = stuff, ''
-        self.s_prepare( s_stuff )
-        self.r_prepare( r_stuff )
-
-
-
+    def prepare(self,stuff):
+        if not '|' in stuff:
+            stuff += '|'
+        s_stuff, r_stuff=stuff.split('|')
+        r_stuff = str_reverse(r_stuff)
+        self._S.prepare( s_stuff )
+        self._R.prepare( r_stuff )
 
     def __init__(self, a='', b='' ):
         if type(a)==type(''): a=map(try_eval,a.split())
@@ -214,7 +209,7 @@ class Test_Empty_Machine(unittest.TestCase):
     def setUp(s):
         s.M = Machine()
     def claim(s, stuff, expected):
-        s.M.sr_prepare(stuff)
+        s.M.prepare(stuff)
         s.M.handle()
         s.assertEqual(s.M.repr(), expected )
     def test_stuff(s): s.claim( '2 3 >R|A B C', '2|3 A B C' )

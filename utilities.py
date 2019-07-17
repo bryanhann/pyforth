@@ -21,3 +21,8 @@ def try_eval( x ):
     try: return int(x)
     except: return x
 
+def str_reverse(s):
+    parts = s.split()
+    parts.reverse()
+    return ' '.join(parts)
+
