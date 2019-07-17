@@ -18,8 +18,15 @@ class Stack(_Stack):
         for item in aa:
             self.push(item)
 
+    def has_items(self):
+        try:
+            self.top()
+        except StackErr:
+            return False
+        return True
+
 DICT = {}
-DICT[ 'square' ] = "dup *"
+DICT[ 'square' ] = ["dup" , "*" ]
 
 class Machine:
 
@@ -29,16 +36,70 @@ class Machine:
             doc = aa.__doc__
             if doc and doc.split()[0]==target:
                 return aa
-    def handle(self):
-        if self.empty():
-            return
-        top = self.top()
+    def cmd(self):
+        if not self._S.has_items():
+            return None
+        top = self._S.top()
         cmd = self.doclookup( top )
+        return cmd
+
+    def word(self):
+        if not self._S.has_items():
+            return None
+        top = self._S.top()
+        if not top in DICT:
+            return None
+        else:
+            return DICT[top]
+    def is_quit(self):
+        return not self.empty() and self.top()=='quit'
+    def handle(self):
+        cmd = self.cmd()
         if cmd:
             self.pop()
             cmd()
-            return
+    def IS(self):
+        self._S.push( self._I.pop(0) )
+    def quit(self):
+        'quit '
+        exit()
+    def all(self):
+        s=repr(self._S.as_list())
+        r=repr(self._R.as_list())
+        i=repr(self._I)
+        rep = '%s -- %s -- %s' % (s,r,i)
+        return rep
+    def display(self):
+        s='%s'%  repr(self._S.as_list())
+        r='%s'%  repr(self._R.as_list())
+        i='%s' % repr(self._I)
+        aa = '%s:%s:%s' % (s,r,i)
+        print(aa)
+    def run(self, user=False):
+        if not user:
+            self._I.append('quit')
+        for i in range(100):
+            #self.display()
+            if self.is_quit():
+                self.pop()
+                return
+            if self.cmd():
+                cmd = self.cmd()
+                self.pop()
+                cmd()
+                continue
+            if self.word():
+                word = self.word()
+                self.pop()
+                self._I = word + self._I
+                #self.display()
+            if self._I:
+                self.IS()
 
+    #def (self):
+
+     #   elif self._I:
+            
     def prepare(self,stuff):
         if not '|' in stuff:
             stuff += '|'
@@ -57,11 +118,11 @@ class Machine:
     def swap(self): self._S.swap()
     def push(self, item): self._S.push(item)
     def top(self): return self._S.top()
-    def empty(self): return not self._S
+    def empty(self): return self._S.empty()
     def pop(self): return self._S.pop()
     def S_load(self, seq): self._S.load(seq)
     def R_load(self, seq): self._R.load(seq)
-    def I_load(self, seq): self._I += [x for x in seq] 
+    def I_load(self, seq): self._I += try_eval([x for x in seq]) 
 
     def repr(self):
         S=self._S.as_list()[:]
@@ -212,6 +273,7 @@ class Test_Empty_Machine(unittest.TestCase):
         s.M.prepare(stuff)
         s.M.handle()
         s.assertEqual(s.M.repr(), expected )
+        #s.M.all()
     def test_stuff(s): s.claim( '2 3 >R|A B C', '2|3 A B C' )
     def test_stuff2(s): s.claim( '2 3 <R|A B C', '2 3 A|B C' )
     def test_op_mult(s): s.claim( 'A 2 3 4 *', 'A 2 12' )
@@ -230,7 +292,20 @@ class Test_Empty_Machine(unittest.TestCase):
         s.assertEqual(  s.M.repr(), '|2 1 0' )
 
 
+    def test_a(s):
+        s.M.I_load( '1 2 3'.split())
+        s.M.run()
+        assert s.M.repr() == '1 2 3'
+    def test_b(s):
+        s.M.I_load( [1,2,3, '*', 2, 2, '*', '+'] )
+        s.M.run()
+        assert s.M.repr() == '1 10'
+    def test_c(s):
+        s.M.I_load( [1,2,3, 'square'] )
+        s.M.run()
+        assert s.M.repr() == '1 2 9'
 
+       
 
 if __name__=='__main__':
     if len(sys.argv)==1:
