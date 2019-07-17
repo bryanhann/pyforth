@@ -17,3 +17,7 @@ def backward( aList ):
     ret.reverse()
     return ret
 
+def try_eval( x ):
+    try: return int(x)
+    except: return x
+
