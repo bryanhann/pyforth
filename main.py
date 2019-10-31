@@ -1,23 +1,36 @@
+from blessings import Terminal
 import unittest
 import sys
-from utilities import *
-from stack import StackErr
-from stack import Stack as _Stack
+from lib.utilities import *
+from lib.stack import StackErr
+from lib.stack import Stack as _Stack
 
 def str_reverse(s):
     parts = s.split()
     parts.reverse()
     return ' '.join(parts)
 
-
+term = Terminal()
 class Stack(_Stack):
+    def set_name(self, name='Anon' ) : self._name=name
+    def set_xpos(self, xpos=10 ) : self._xpos = xpos
     def prepare(self, aa=[] ):
         if type(aa)==type(''):
             aa = aa.split()
             aa = map(try_eval, aa)
         for item in aa:
             self.push(item)
+    def bless(self):
+        aa = self.as_list()
+        with term.location(self._xpos, term.height - 2):
+            print( self._name )
+        with term.location(self._xpos, term.height - 3):
+            print(  '---------------------' )
+        for ii in range(len(aa)):
+            with term.location(self._xpos, term.height - 4 -ii):
+                print ('This is', term.underline(repr(aa[ii])))
 
+            print ( 'ok' )
     def has_items(self):
         try:
             self.top()
@@ -25,6 +38,10 @@ class Stack(_Stack):
             return False
         return True
 
+a= Stack(range(5))
+a.set_name('S')
+a.set_xpos(5)
+a.bless()
 DICT = {}
 DICT[ 'square' ] = ["dup" , "*" ]
 

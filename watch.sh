@@ -6,5 +6,5 @@ while true ; do
     echo change
     old=$new
     clear
-    python3 main.py
+    python main.py
 done
